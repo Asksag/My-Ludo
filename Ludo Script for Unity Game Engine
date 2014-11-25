@@ -1,0 +1,134 @@
+using UnityEngine;
+using System.Collections;
+
+public class DicePlay : MonoBehaviour
+{
+	private Vector3 finishLine;
+	public GUIStyle style;
+	public int numberRand, oldPoint;
+	public GameObject yellowPlayer;
+	public GameObject[] yellowWayPoint;
+	public GameObject startPoint;
+	Vector3 yellowPlayerStartPosition;
+	Vector3 target;
+	Vector3 targetT;
+	public bool desirePoint, winEnable, sixPlay, gameOver;
+	private int desireScore = 0;
+	int l = 0;
+	float waitTime;
+	// Use this for initialization
+	void Start ()
+	{
+		gameOver = false;
+		desirePoint = false;
+		winEnable = false;
+		sixPlay = false;
+		numberRand = 0;
+
+		yellowPlayerStartPosition = new Vector3 (-6.1f, -2.5f, 0f);
+//		yellowWayPoint = GameObject.FindGameObjectsWithTag ("way");
+
+		startPoint = GameObject.Find ("YellowCube1");
+		finishLine = GameObject.Find ("YellowCube58").transform.position;
+	}
+	
+		// Update is called once per frame
+	void Update ()
+	{
+
+		if (Input.GetMouseButtonDown (0)) 
+		{ // if left button pressed...
+			Ray ray = camera.ScreenPointToRay (Input.mousePosition);
+			RaycastHit hit;
+			if (Physics.Raycast (ray, out hit, 100.0f)) 
+			{
+				Debug.Log ("Click");
+				randDice ();
+			}
+		}
+	}
+
+	public void randDice ()
+	{
+		numberRand = Random.Range (1, 7);
+
+		Debug.Log (numberRand);
+		if (numberRand == 6 && yellowPlayer.transform.position == yellowPlayerStartPosition) 
+		{
+			Debug.Log (numberRand.ToString ("Six"));
+			GameObject.Find ("YellowPlayer").transform.position = startPoint.transform.position;
+			sixPlay = true;
+			StartCoroutine (waitStarT ());
+		} 
+		else if (yellowPlayer.transform.position != yellowPlayerStartPosition) 
+		{
+			l = l + numberRand;
+
+			if (l <= (yellowWayPoint.Length - 1))
+			{
+			targetT = yellowWayPoint [l].transform.position;
+			Debug.Log (targetT);
+			GameObject.Find ("YellowPlayer").transform.position = Vector3.MoveTowards (transform.position, targetT, 50.0f);
+				if (yellowPlayer.transform.position == finishLine)
+				{
+					winEnable = true;
+					gameOver = true;
+				}
+			}
+
+
+			else
+			{
+				oldPoint = l - numberRand;
+				desireScore = (yellowWayPoint.Length - oldPoint) - 1 ;
+				desirePoint = true;
+				l = oldPoint;
+				StartCoroutine (waitDesire ());
+			}
+
+
+
+		}
+	}
+
+	void OnGUI ()
+	{
+		if (gameOver == false)
+		{
+			GUI.Label (new Rect (0, 0, 500, 200), "Dice Value : " + numberRand, style);
+		}
+		if (desirePoint == true) 
+		{
+			GUI.Label (new Rect (200, 100, 600, 200),"Do not have desire point !!! You Need to Score: " + desireScore, style);
+
+
+		}
+		if (winEnable == true) 
+		{
+			GUI.Label (new Rect (250, 100, 600, 200),"You Won The Game !!!!!! ", style);
+			desirePoint = false;
+		}
+		if (sixPlay == true) 
+		{
+			GUI.Label (new Rect (200, 100, 600, 200),"You Got Six !!! Let's Play ------ ", style);
+			
+			
+		}
+	}
+
+	IEnumerator waitDesire ()
+	{
+		yield return new WaitForSeconds(1);
+		desirePoint = false;
+
+	}
+	IEnumerator waitStarT ()
+	{
+		yield return new WaitForSeconds(2);
+
+		sixPlay = false;
+	}
+	
+
+		
+}
